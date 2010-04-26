@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use Quiz;
+use Getopt::Long;
+use Term::ANSIColor;
+use Term::ReadLine;
+use POSIX;
+
+my $term = new Term::ReadLine 'Finnishquiz';
+my $dbh  = dbinit();
+my ( $score, $times ) = 0;
+my $from   = 'finnish';
+my $to     = 'spanish';
+my $easy   = undef;
+my $groups = undef;
+my ( @records, @records_track ) = undef;
+
+my $result = GetOptions(
+    "from=s"   => \$from,
+    "to=s"     => \$to,
+    "easy"     => \$easy,
+    "groups=i" => \$groups,
+);
+
+sub build_prompt {
+    my $to            = shift;
+    my $from          = shift;
+    my $record        = shift;
+    my $records_track = shift;
+
+    my $str;
+
+    if ($groups) {
+        my $yet_to_complete = $records_track - $groups;
+        $str = colored ['yellow'], "($yet_to_complete) "
+          if $yet_to_complete < 0;
+    }
+
+    $str .= "Enter $to word for $from -> " . $record->{$from};
+
+    if ($easy) {
+        $str .= " (Hint: " . get_hint_word( $record->{$to} );
+    }
+
+    return $str . ": ";
+}
+
+if ( $groups ) {
+    @records = get_n_random_records( $groups, $from, $to );
+}
+
+my $record = ( $groups ) ? $records[rand(scalar @records)] : get_n_random_records(1, $from, $to);
+
+while ( defined( my $ord = $term->readline(colored ['reset'], build_prompt($to, $from, $record, scalar @records_track) ) ) ) {
+    exit if lc($ord) eq 'quit';
+
+    if ( $groups ) {
+        system 'clear';
+        push(@records_track, $record->{id}) unless $record->{id} ~~ @records_track;
+    }
+
+    if ( check_word( $ord, $record->{$to} ) ) {
+        print colored ['green'], "Good!\n";
+        $score++;
+    }
+    else {
+        print colored ['red'], "Bad, answer was '$record->{$to}'\n";
+    }
+
+    $times++;
+    printf("Score %d/%d [ %d%% ]\n", $score, $times, ceil( ($score * 100) / $times ) );
+
+    $record = ( $groups ) ? $records[rand(scalar @records)] : get_n_random_records(1, $from, $to);
+}
+
+END { print "\nKTHXBYE\n"; }

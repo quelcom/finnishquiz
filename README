@@ -1,0 +1,20 @@
+finnishquiz - small perl utility to practice finnish vocabulary (and other languages)
+
+Usage:
+    finnishquiz [options]
+
+Options:
+    -f --from=<lang>
+    -t --to=<lang>
+    -e --easy
+    -g --groups=<number>
+
+where <lang> is either finnish,spanish,swedish,english or catalan
+and <number> is a natural number
+
+Perl dependencies:
+    Term::ReadLine
+    Term::ANSIColor
+    DBI
+    Getopt::Long
+
