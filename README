@@ -12,9 +12,12 @@ Options:
 where <lang> is either finnish,spanish,swedish,english or catalan
 and <number> is a natural number
 
+This module needs Perl 5.10 or later.
+
 Perl dependencies:
     Term::ReadLine
     Term::ANSIColor
     DBI
+    DBD::SQLite
     Getopt::Long
 
